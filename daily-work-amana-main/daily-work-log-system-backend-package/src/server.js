@@ -7,7 +7,7 @@ const morgan = require('morgan');
 const path = require('path');
 const { initScheduledTasks } = require('./utils/scheduler');
 
-// 🔥 מוסיפים את ה-controller של auth
+// 🔥 controller של auth
 const authController = require('./controllers/auth.controller');
 
 // Import routes
@@ -52,14 +52,18 @@ app.use(
 
 // ------------------ API ROUTES ------------------
 
-// router רגיל
-app.use('/api/auth', authRoutes);
+// ✅ תומך גם ב-/api/auth וגם ב-/auth
+// כלומר שני הנתיבים הבאים יעבדו:
+// POST /api/auth/login
+// POST /auth/login
+app.use(['/api/auth', '/auth'], authRoutes);
 
-// ✅ ראוט ישיר ללוגין – מבטיח ש־/api/auth/login תמיד עובד
-app.post('/api/auth/login', (req, res, next) => {
-  console.log('🔥 /api/auth/login reached directly in server.js');
-  authController.login(req, res, next);
-});
+// אין צורך בראוט כפול ישיר – ה-router כבר מטפל ב-/login
+// אם בכל זאת אתה רוצה לוג מיוחד:
+// app.post(['/api/auth/login', '/auth/login'], (req, res, next) => {
+//   console.log('🔥 Login reached directly in server.js');
+//   authController.login(req, res, next);
+// });
 
 app.use('/api/users', userRoutes);
 app.use('/api/projects', projectRoutes);
@@ -96,7 +100,6 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5001;
 
-// ⛽️ לוקחים את ה-URI רק מה־ENV, לא נופלים ל־localhost בטעות
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
