@@ -36,7 +36,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
-// Static files (uploads)
+// ------------------ STATIC FILES (OLD LOCAL UPLOADS) ------------------
+
 app.use(
   '/uploads',
   express.static(path.join(__dirname, 'uploads'), {
@@ -54,12 +55,7 @@ app.use(
 // ------------------ API ROUTES ------------------
 
 // ✅ תומך גם ב-/api/auth וגם ב-/auth
-// כלומר כל אלה יעבדו:
-// POST /api/auth/login
-// POST /auth/login
 app.use(['/api/auth', '/auth'], authRoutes);
-
-// ✅ אותו טריק לשאר הראוטים – גם עם /api וגם בלי
 
 // Users
 app.use(['/api/users', '/users'], userRoutes);
@@ -70,9 +66,7 @@ app.use(['/api/projects', '/projects'], projectRoutes);
 // Logs
 app.use(['/api/logs', '/logs'], logRoutes);
 
-// Uploads API – שים לב שלא משתמשים ב-/uploads כי זה כבר סטטי לקבצים
-app.use(['/api/uploads', '/uploads-api'], uploadRoutes);
-
+app.use(['/api/uploads', '/uploads', '/uploads-api'], uploadRoutes);
 // Notifications
 app.use(['/api/notifications', '/notifications'], notificationRoutes);
 

@@ -1,32 +1,29 @@
 import api from './apiService';
 
-// 📤 העלאת תמונות (Photos) ללוג – משתמש בנתיב /uploads/:logId/photos
+// 📤 העלאת תמונות (Photos) ללוג – עכשיו הולך ל- /api/uploads/:logId/photos
 export function uploadPhoto(logId, formData) {
-  return api.post(`/uploads/${logId}/photos`, formData, {
+  return api.post(`uploads/${logId}/photos`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 }
 
-// 📤 העלאת מסמכים (Documents) ללוג – /uploads/:logId/documents
+// 📤 העלאת מסמכים (Documents) ללוג – /api/uploads/:logId/documents
 export function uploadDocument(logId, formData) {
-  return api.post(`/uploads/${logId}/documents`, formData, {
+  return api.post(`uploads/${logId}/documents`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 }
 
-// 📤 העלאת תעודת משלוח ישנה – כרגע עדיין endpoint נפרד
-// שים לב: אם תרצה שגם זה ילך ל-GCS, נצטרך לעדכן את ה-backend של /logs/:logId/certificate
+// 📤 העלאת תעודת משלוח ישנה – /api/logs/:logId/certificate
 export const uploadCertificate = (logId, formData) => {
-  return api.post(`/logs/${logId}/certificate`, formData, {
+  return api.post(`logs/${logId}/certificate`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 };
 
-// 🗑 מחיקת קובץ – חייב להתאים ל-route של ה-backend:
-// DELETE /uploads/:logId/:fileType/:fileId
-// fileType = 'photos' | 'documents'
+// 🗑 מחיקת קובץ – DELETE /api/uploads/:logId/:fileType/:fileId
 export function deleteFile(logId, fileType, fileId) {
-  return api.delete(`/uploads/${logId}/${fileType}/${fileId}`);
+  return api.delete(`uploads/${logId}/${fileType}/${fileId}`);
 }
 
 // 👀 בניית URL לתצוגת קובץ
@@ -44,7 +41,6 @@ export function getFilePreviewUrl(filePath) {
     (process.env.REACT_APP_API_URL ||
       'https://daily-work-amana-main-backend-417811099802.europe-west1.run.app').replace(/\/$/, '');
 
-  // לוודא שיש / אחד בין הבסיס לנתיב
   const cleanedPath = filePath.startsWith('/') ? filePath : `/${filePath}`;
 
   return `${baseUrl}${cleanedPath}`;
