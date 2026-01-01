@@ -7,7 +7,7 @@ const morgan = require('morgan');
 const path = require('path');
 const { initScheduledTasks } = require('./utils/scheduler');
 
-// 🔥 controller של auth
+// 🔥 controller של auth (אם צריך אותו ישירות)
 const authController = require('./controllers/auth.controller');
 
 // Import routes
@@ -22,7 +22,8 @@ const notificationRoutes = require('./routes/notification.routes');
 // Create Express app
 const app = express();
 
-// Middleware
+// ------------------ MIDDLEWARE ------------------
+
 app.use(
   helmet({
     crossOriginEmbedderPolicy: false,
@@ -53,31 +54,39 @@ app.use(
 // ------------------ API ROUTES ------------------
 
 // ✅ תומך גם ב-/api/auth וגם ב-/auth
-// כלומר שני הנתיבים הבאים יעבדו:
+// כלומר כל אלה יעבדו:
 // POST /api/auth/login
 // POST /auth/login
 app.use(['/api/auth', '/auth'], authRoutes);
 
-// אין צורך בראוט כפול ישיר – ה-router כבר מטפל ב-/login
-// אם בכל זאת אתה רוצה לוג מיוחד:
-// app.post(['/api/auth/login', '/auth/login'], (req, res, next) => {
-//   console.log('🔥 Login reached directly in server.js');
-//   authController.login(req, res, next);
-// });
+// ✅ אותו טריק לשאר הראוטים – גם עם /api וגם בלי
 
-app.use('/api/users', userRoutes);
-app.use('/api/projects', projectRoutes);
-// app.use('/api/employees', employeeRoutes);
-app.use('/api/logs', logRoutes);
-app.use('/api/uploads', uploadRoutes);
-app.use('/api/notifications', notificationRoutes);
+// Users
+app.use(['/api/users', '/users'], userRoutes);
 
-// Root route
+// Projects
+app.use(['/api/projects', '/projects'], projectRoutes);
+
+// Logs
+app.use(['/api/logs', '/logs'], logRoutes);
+
+// Uploads API – שים לב שלא משתמשים ב-/uploads כי זה כבר סטטי לקבצים
+app.use(['/api/uploads', '/uploads-api'], uploadRoutes);
+
+// Notifications
+app.use(['/api/notifications', '/notifications'], notificationRoutes);
+
+// אם יש Employees בעתיד:
+// app.use(['/api/employees', '/employees'], employeeRoutes);
+
+// ------------------ ROOT ROUTE ------------------
+
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Daily Work Log System API' });
 });
 
-// 404 – אם אין ראוט
+// ------------------ 404 HANDLER ------------------
+
 app.use((req, res, next) => {
   console.warn(`❌ Route not found: [${req.method}] ${req.originalUrl}`);
   res.status(404).json({
@@ -87,7 +96,8 @@ app.use((req, res, next) => {
   });
 });
 
-// Error handler 500
+// ------------------ ERROR HANDLER 500 ------------------
+
 app.use((err, req, res, next) => {
   console.error('🔥 Server error:', err.stack);
   res.status(500).json({
@@ -99,7 +109,6 @@ app.use((err, req, res, next) => {
 // ------------------ DB & SERVER ------------------
 
 const PORT = process.env.PORT || 5001;
-
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
