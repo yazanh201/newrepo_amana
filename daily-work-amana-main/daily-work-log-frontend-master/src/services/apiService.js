@@ -65,14 +65,20 @@ export const employeeService = {
 };
 
 // File upload service
+// File upload service
 export const fileService = {
-  uploadPhoto: (logId, formData) => api.post(`/uploads/${logId}/photos`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  }),
-  uploadDocument: (logId, formData) => api.post(`/uploads/${logId}/documents`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  }),
-  deleteFile: (fileId) => api.delete(`/uploads/files/${fileId}`),
+  uploadPhoto: (logId, formData) =>
+    api.post(`uploads/${logId}/photos`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+
+  uploadDocument: (logId, formData) =>
+    api.post(`uploads/${logId}/documents`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+
+  deleteFile: (fileId) =>
+    api.delete(`uploads/files/${fileId}`),
 };
 
 // Notification service
