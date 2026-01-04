@@ -36,8 +36,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
-// ------------------ STATIC FILES (OLD LOCAL UPLOADS) ------------------
-
+// Static files (uploads)
 app.use(
   '/uploads',
   express.static(path.join(__dirname, 'uploads'), {
@@ -55,7 +54,12 @@ app.use(
 // ------------------ API ROUTES ------------------
 
 // ✅ תומך גם ב-/api/auth וגם ב-/auth
+// כלומר כל אלה יעבדו:
+// POST /api/auth/login
+// POST /auth/login
 app.use(['/api/auth', '/auth'], authRoutes);
+
+// ✅ אותו טריק לשאר הראוטים – גם עם /api וגם בלי
 
 // Users
 app.use(['/api/users', '/users'], userRoutes);
@@ -66,7 +70,9 @@ app.use(['/api/projects', '/projects'], projectRoutes);
 // Logs
 app.use(['/api/logs', '/logs'], logRoutes);
 
-app.use(['/api/uploads', '/uploads', '/uploads-api'], uploadRoutes);
+// Uploads API – שים לב שלא משתמשים ב-/uploads כי זה כבר סטטי לקבצים
+app.use(['/api/uploads', '/uploads-api'], uploadRoutes);
+
 // Notifications
 app.use(['/api/notifications', '/notifications'], notificationRoutes);
 
@@ -99,21 +105,17 @@ app.use((err, req, res, next) => {
     error: process.env.NODE_ENV === 'development' ? err : {},
   });
 });
+
 // ------------------ DB & SERVER ------------------
 
-const PORT = Number(process.env.PORT) || 8080;
+const PORT = process.env.PORT || 5001;
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
   console.error('❌ MONGODB_URI is not defined in environment variables');
+  process.exit(1);
 }
 
-// ✅ קודם כל מרימים שרת כדי ש-Cloud Run יעבור health check
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server is running on port ${PORT}`);
-});
-
-// ✅ ואז מתחברים ל-MongoDB (לא חוסם את עליית השירות)
 mongoose
   .connect(MONGODB_URI, {
     useNewUrlParser: true,
@@ -121,12 +123,17 @@ mongoose
   })
   .then(() => {
     console.log('✅ Connected to MongoDB');
+
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Server is running on port ${PORT}`);
+    });
+
     initScheduledTasks();
     console.log('⏰ Scheduled tasks initialized');
   })
   .catch((err) => {
-    console.error('❌ Failed to connect to MongoDB', err.message || err);
-    // לא עושים process.exit ב-Cloud Run, כדי לא להפיל את הקונטיינר
+    console.error('❌ Failed to connect to MongoDB', err);
+    process.exit(1);
   });
 
 module.exports = app;
